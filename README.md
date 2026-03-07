@@ -1,1 +1,1 @@
-# SHM-for-Under-Damped-Regions
+# SHM for Under Damped Regions PINNs
