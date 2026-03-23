@@ -2,10 +2,8 @@
 
 This repository contains two implementations of Physics-Informed Neural Networks (PINNs):
 
-1. Burgers equation with comparison between standard and Fourier feature PINNs  
+1. Burgers equation with standard and Fourier feature PINNs  
 2. Underdamped harmonic oscillator as a parametric PINN  
-
-The focus is on formulation, training behavior, and quantitative solution quality.
 
 ---
 
@@ -13,57 +11,57 @@ The focus is on formulation, training behavior, and quantitative solution qualit
 
 ## Governing Equation
 
-The viscous Burgers equation is given by:
+The viscous Burgers equation:
 
-\[
+$$
 u_t + u\,u_x = \nu u_{xx}, \quad \nu = \frac{0.01}{\pi}
-\]
+$$
 
 Domain:
 
-\[
+$$
 x \in [-1,1], \quad t \in [0,1]
-\]
+$$
 
 Initial condition:
 
-\[
+$$
 u(x,0) = -\sin(\pi x)
-\]
+$$
 
 Boundary conditions:
 
-\[
+$$
 u(-1,t) = 0, \quad \nu(1,t) = 0
-\]
+$$
 
 ---
 
 ## PINN Formulation
 
-A neural network \( u_\theta(x,t) \) is trained by minimizing:
+A neural network $u_\theta(x,t)$ is trained by minimizing:
 
-\[
+$$
 \mathcal{L} = \mathcal{L}_{\text{PDE}} + \mathcal{L}_{\text{IC}} + \mathcal{L}_{\text{BC}}
-\]
+$$
 
 ### PDE Residual Loss
 
-\[
+$$
 \mathcal{L}_{\text{PDE}} = \mathbb{E}\left[(u_t + u u_x - \nu u_{xx})^2\right]
-\]
+$$
 
 ### Initial Condition Loss
 
-\[
+$$
 \mathcal{L}_{\text{IC}} = \mathbb{E}\left[(u_\theta(x,0) + \sin(\pi x))^2\right]
-\]
+$$
 
 ### Boundary Condition Loss
 
-\[
+$$
 \mathcal{L}_{\text{BC}} = \mathbb{E}\left[(u_\theta(\pm1,t))^2\right]
-\]
+$$
 
 ---
 
@@ -72,8 +70,8 @@ A neural network \( u_\theta(x,t) \) is trained by minimizing:
 ### Standard PINN
 
 - Fully connected network  
-- Architecture: \(2 \to 128 \to 128 \to 128 \to 1\)  
-- Activation: \(\tanh\)
+- Architecture: $2 \rightarrow 128 \rightarrow 128 \rightarrow 128 \rightarrow 1$  
+- Activation: $\tanh$
 
 ---
 
@@ -81,29 +79,26 @@ A neural network \( u_\theta(x,t) \) is trained by minimizing:
 
 Input embedding:
 
-\[
-\phi(x,t) = \left[\sin(2\pi B[x,t]), \cos(2\pi B[x,t])\right]
-\]
+$$
+\phi(x,t) = [\sin(2\pi B[x,t]), \cos(2\pi B[x,t])]
+$$
 
-where:
-
-\[
+$$
 B \sim \mathcal{N}(0, \sigma^2)
-\]
+$$
 
 - Feature dimension: 64  
-- MLP: \(64 \to 128 \to 128 \to 128 \to 1\)
+- MLP: $64 \rightarrow 128 \rightarrow 128 \rightarrow 128 \rightarrow 1$
 
 ---
 
 ## Training Strategy
 
-- Stage 1: Adam optimization  
-- Stage 2: L-BFGS refinement  
-- Sampling:
-  - Interior points for PDE residual  
-  - Initial condition points at \(t=0\)  
-  - Boundary points at \(x = \pm 1\)
+- Adam optimizer followed by L-BFGS  
+- Collocation points:
+  - Interior (PDE)
+  - Initial ($t=0$)
+  - Boundary ($x=\pm1$)
 
 ---
 
@@ -111,32 +106,31 @@ B \sim \mathcal{N}(0, \sigma^2)
 
 ### Standard PINN
 
-- Captures global solution behavior  
-- Smooth approximation of wave propagation  
-- Residual increases near shock formation region  
+- Captures global structure  
+- Error concentrated near shock  
 
-\[
-|u_t + u u_x - \nu u_{xx}| \text{ is high near } x \approx 0
-\]
+$$
+|u_t + u u_x - \nu u_{xx}| \text{ increases near } x \approx 0
+$$
 
 ---
 
 ### Fourier Feature PINN
 
-- Improved representation of steep gradients  
-- Better resolution of high-frequency components  
-- Lower residual near shock region  
+- Better gradient resolution  
+- Reduced error near shock  
+- Improved spectral representation  
 
 ---
 
 ## Residual Diagnostic
 
-\[
+$$
 R(x,t) = \left| u_t + u u_x - \nu u_{xx} \right|
-\]
+$$
 
-- Standard PINN: localized high residual near shock  
-- Fourier PINN: more uniform residual distribution  
+- Standard PINN: localized high residual  
+- Fourier PINN: more uniform residual  
 
 ---
 
@@ -144,12 +138,12 @@ R(x,t) = \left| u_t + u u_x - \nu u_{xx} \right|
 
 ## Governing Equation
 
-\[
+$$
 \frac{d^2 x}{dz^2} + 2 \xi \frac{dx}{dz} + x = 0
-\]
+$$
 
-- \(z\): time variable  
-- \(\xi \in [0.1, 0.4]\): damping ratio  
+- $z$: time variable  
+- $\xi \in [0.1, 0.4]$: damping ratio  
 
 ---
 
@@ -157,70 +151,63 @@ R(x,t) = \left| u_t + u u_x - \nu u_{xx} \right|
 
 The network approximates:
 
-\[
+$$
 x_\theta(z, \xi)
-\]
+$$
 
-Total loss:
+Loss:
 
-\[
+$$
 \mathcal{L} = \mathcal{L}_{\text{PDE}} + \mathcal{L}_{\text{IC}}
-\]
+$$
 
 ### PDE Residual
 
-\[
+$$
 \mathcal{L}_{\text{PDE}} = \mathbb{E}\left[\left(\frac{d^2 x}{dz^2} + 2\xi \frac{dx}{dz} + x \right)^2\right]
-\]
+$$
 
 ### Initial Conditions
 
-\[
+$$
 x(0) = 0.7, \quad \frac{dx}{dz}(0) = 1.2
-\]
+$$
 
-\[
+$$
 \mathcal{L}_{\text{IC}} = (x(0)-0.7)^2 + \left(\frac{dx}{dz}(0)-1.2\right)^2
-\]
+$$
 
 ---
 
 ## Model
 
-- Input: \((z, \xi)\)  
-- Architecture: \(2 \to 64 \to 64 \to 64 \to 1\)  
-- Activation: \(\tanh\)
+- Input: $(z, \xi)$  
+- Architecture: $2 \rightarrow 64 \rightarrow 64 \rightarrow 64 \rightarrow 1$  
+- Activation: $\tanh$
 
 ---
 
 ## Training
 
-- Optimizer: Adam  
+- Adam optimizer  
 - Domain:
-  - \(z \in [0,20]\)  
-  - \(\xi \in [0.1,0.4]\)
+  - $z \in [0,20]$
+  - $\xi \in [0.1,0.4]$
 
 ---
 
 ## Results
 
-The network captures underdamped oscillatory behavior:
+The learned solution follows:
 
-\[
+$$
 x(z,\xi) \approx e^{-\xi z} \cos(\omega z), \quad \omega = \sqrt{1-\xi^2}
-\]
+$$
 
 ### Observations
 
-- Decreasing \(\xi\):
-  - Slower decay  
-  - Sustained oscillations  
-
-- Increasing \(\xi\):
-  - Faster decay  
-  - Reduced amplitude  
-
-The model generalizes across \(\xi\) and learns a continuous solution family.
+- Lower $\xi$: slower decay, sustained oscillations  
+- Higher $\xi$: faster decay, reduced amplitude  
 
 ---
 
@@ -228,23 +215,21 @@ The model generalizes across \(\xi\) and learns a continuous solution family.
 
 ## Burgers Equation
 
-- Standard PINNs struggle with sharp gradients  
-- Fourier features improve spectral representation  
-- Residual distribution becomes more uniform  
+- Standard PINNs under-resolve sharp gradients  
+- Fourier features improve high-frequency representation  
 
 ---
 
 ## Harmonic Oscillator
 
-- Single network captures parametric dependence on \(\xi\)  
-- Learns full solution family without explicit solver  
+- Single network learns parametric dependence on $\xi$  
+- Captures full solution family  
 
 ---
 
 # Conclusion
 
-- PINNs solve nonlinear PDEs and parametric ODEs using residual minimization  
+- PINNs enforce governing equations via residual minimization  
 - Automatic differentiation provides exact derivatives  
-- Representation choice affects accuracy in high-frequency regimes  
-- Fourier embeddings improve performance for problems with sharp features  
-- Parametric PINNs enable continuous solution spaces across system parameters
+- Fourier embeddings improve performance for high-frequency regimes  
+- Parametric PINNs learn continuous solution manifolds
